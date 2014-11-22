@@ -14,7 +14,8 @@
 	var pMatrix = mat4.create();
 
 	// Variables for storing textures
-	var wallTexture;
+	var wallTextureRed;
+	var floorTextureGray;
 
 	// Variable that stores  loading state of textures.
 	var texturesLoaded = false;
@@ -25,10 +26,10 @@
 	// Variables for storing current position and speed
 	var pitch = 0;
 	var pitchRate = 0;
-	var yaw = 0;
+	var yaw = 30;
 	var yawRate = 0;
 	var xPosition = 0;
-	var yPosition = 0.4;
+	var yPosition = 1.8;
 	var zPosition = 0;
 	var speed = 0;
 
@@ -97,7 +98,7 @@
 	  if (!shaderScript) {
 	    return null;
 	  }
-	  
+
 	  // Walk through the source element's children, building the
 	  // shader source string.
 	  var shaderSource = "";
@@ -108,7 +109,7 @@
 	    }
 	    currentChild = currentChild.nextSibling;
 	  }
-	  
+
 	  // Now figure out what type of shader script we have,
 	  // based on its MIME type.
 	  var shader;
@@ -143,21 +144,21 @@
 	function initShaders() {
 	  var fragmentShader = getShader(gl, "shader-fs");
 	  var vertexShader = getShader(gl, "shader-vs");
-	  
+
 	  // Create the shader program
 	  shaderProgram = gl.createProgram();
 	  gl.attachShader(shaderProgram, vertexShader);
 	  gl.attachShader(shaderProgram, fragmentShader);
 	  gl.linkProgram(shaderProgram);
-	  
+
 	  // If creating the shader program failed, alert
 	  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 	    alert("Unable to initialize the shader program.");
 	  }
-	  
+
 	  // start using shading program for rendering
 	  gl.useProgram(shaderProgram);
-	  
+
 	  // store location of aVertexPosition variable defined in shader
 	  shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 
@@ -170,9 +171,9 @@
 	  // store location of aTextureCoord variable defined in shader
 	  gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
-	  // store location of uPMatrix variable defined in shader - projection matrix 
+	  // store location of uPMatrix variable defined in shader - projection matrix
 	  shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-	  // store location of uMVMatrix variable defined in shader - model-view matrix 
+	  // store location of uMVMatrix variable defined in shader - model-view matrix
 	  shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
 	  // store location of uSampler variable defined in shader
 	  shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
@@ -188,6 +189,44 @@
 	  gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 	}
 
+	function init() {
+				// model
+
+				var onProgress = function ( xhr ) {
+					if ( xhr.lengthComputable ) {
+						var percentComplete = xhr.loaded / xhr.total * 100;
+						console.log( Math.round(percentComplete, 2) + '% downloaded' );
+					}
+				};
+
+				var onError = function ( xhr ) {
+				};
+
+
+				THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
+
+				var loader = new THREE.OBJMTLLoader();
+				loader.load( './assets/alexia/alexia.obj', './assets/alexia/alexia.mtl', function ( object ) {
+
+					object.position.y = - 80;
+					scene.add( object );
+
+				}, onProgress, onError );
+
+				//
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
 	//
 	// initTextures
 	//
@@ -196,12 +235,19 @@
 	// the job; it gets called each time a texture finishes loading.
 	//
 	function initTextures() {
-	  wallTexture = gl.createTexture();
-	  wallTexture.image = new Image();
-	  wallTexture.image.onload = function () {
-	    handleTextureLoaded(wallTexture)
+	  wallTextureRed = gl.createTexture();
+	  wallTextureRed.image = new Image();
+	  wallTextureRed.image.onload = function () {
+	    handleTextureLoaded(wallTextureRed)
 	  }
-	  wallTexture.image.src = "./assets/red_wall.png";
+	  wallTextureRed.image.src = "./assets/red_wall.png";
+
+	  floorTextureGray = gl.createTexture();
+	  floorTextureGray.image = new Image();
+	  floorTextureGray.image.onload = function () {
+	    handleTextureLoaded(floorTextureGray)
+	  }
+	  floorTextureGray.image.src = "./assets/gray_floor.png";
 	}
 
 	function handleTextureLoaded(texture) {
@@ -223,7 +269,7 @@
 	//
 	// handleLoadedWorld
 	//
-	// Initialisation of world 
+	// Initialisation of world
 	//
 	function handleLoadedWorld(data) {
 	  var lines = data.split("\n");
@@ -264,7 +310,7 @@
 	//
 	// loadWorld
 	//
-	// Loading world 
+	// Loading world
 	//
 	function loadWorld() {
 	  var request = new XMLHttpRequest();
@@ -292,7 +338,7 @@
 	  if (worldVertexTextureCoordBuffer == null || worldVertexPositionBuffer == null) {
 	    return;
 	  }
-	  
+
 	  // Establish the perspective with which we want to view the
 	  // scene. Our field of view is 45 degrees, with a width/height
 	  // ratio of 640:480, and we only want to see objects between 0.1 units
@@ -311,7 +357,7 @@
 
 	  // Activate textures
 	  gl.activeTexture(gl.TEXTURE0);
-	  gl.bindTexture(gl.TEXTURE_2D, wallTexture);
+	  gl.bindTexture(gl.TEXTURE_2D, wallTextureRed);
 	  gl.uniform1i(shaderProgram.samplerUniform, 0);
 
 	  // Set the texture coordinates attribute for the vertices.
@@ -428,7 +474,7 @@
 	    // Initialize the shaders; this is where all the lighting for the
 	    // vertices and so forth is established.
 	    initShaders();
-	    
+
 	    // Next, load and set up the textures we'll be using.
 	    initTextures();
 
@@ -438,7 +484,7 @@
 	    // Bind keyboard handling functions to document handlers
 	    document.onkeydown = handleKeyDown;
 	    document.onkeyup = handleKeyUp;
-	    
+
 	    // Set up to draw the scene periodically.
 	    setInterval(function() {
 	      if (texturesLoaded) { // only draw scene and animate when textures are loaded.
