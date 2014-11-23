@@ -242,13 +242,13 @@ $(document).ready(function() {
 
   function setupScene() {
     var units = mapW;
-    var UNITSIZE = 250;
-    var WALLHEIGHT = UNITSIZE/3;
+    var UNITSIZE = 100;
+    var WALLHEIGHT = UNITSIZE*2;
 
     // Geometry: floor
     var floor = new THREE.Mesh(
       new THREE.BoxGeometry(units * UNITSIZE, 10, units * UNITSIZE),
-      new THREE.MeshLambertMaterial({color: 0xEDCBA0})
+      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/gray_floor.png')})
     );
     scene.add(floor);
 
@@ -258,6 +258,8 @@ $(document).ready(function() {
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/concrete_wall.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/red_wall_2.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
+      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/fri.png')}),
+      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/vrata-nasproti.png')}),
     ];
     for (var i = 0; i < mapW; i++) {
       for (var j = 0, m = map[i].length; j < m; j++) {
