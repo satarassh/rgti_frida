@@ -1,7 +1,7 @@
 $(document).ready(function() {
   var container, stats;
 
-  var camera, scene, renderer;
+  var camera, scene, renderer, controls;
 
   var mouseX = 0, mouseY = 0, i = 0;
 
@@ -107,6 +107,7 @@ $(document).ready(function() {
     scene.add( mesh );
 
     // load interior model
+    /*
     var loader2 = new THREE.AssimpJSONLoader();
     loader2.load( './assets/models/assimp/interior/interior.assimp.json', function ( assimpjson ) {
 
@@ -120,7 +121,7 @@ $(document).ready(function() {
       scene.add( assimpjson );
 
     }, onProgress, onError );
-
+    */
     //
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -139,86 +140,20 @@ $(document).ready(function() {
     stats = new Stats();
     container.appendChild( stats.domElement );
 
+    blendMesh = new THREE.BlendCharacter();
+    blendMesh.load( "./assets/models/skinned/marine/marine_anims.js" );
+
     //
+
+    var radius = 100;
+    controls = new THREE.OrbitControls( camera );
+    controls.target = new THREE.Vector3( 0, radius, 0 );
+    controls.update();
 
     window.addEventListener( 'resize', onWindowResize, false );
 
   }
 
-/*
-  function init() {
-    container = document.createElement( 'div' );
-    document.body.appendChild( container );
-
-    //container = $("#glcanvas");
-
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-    camera.position.z = 500;
-    camera.position.y = 100;
-
-    // scene
-
-    scene = new THREE.Scene();
-
-    var ambient = new THREE.AmbientLight( 0xffffff ); //barva ambientne svetlobe
-    scene.add( ambient );
-
-    var directionalLight = new THREE.DirectionalLight( 0xffffff); //barva luči
-    directionalLight.position.set( 1, 0, 0 ).normalize(); // smer svetlobe
-    scene.add( directionalLight );
-
-    //scene.fog = new THREE.Fog( 0x72645b, 2, 15 );
-
-
-    // Ground
-
-    var plane = new THREE.Mesh(
-      new THREE.PlaneBufferGeometry( 4000, 4000),
-      new THREE.MeshPhongMaterial( { ambient: 0x999999, color: 0x999999, specular: 0x101010 } )
-    );
-    plane.rotation.x = -Math.PI/2;
-    plane.position.y = -0.5;
-    scene.add( plane );
-
-    plane.receiveShadow = true;
-
-    // model
-
-    var onProgress = function ( xhr ) {
-      if ( xhr.lengthComputable ) {
-        var percentComplete = xhr.loaded / xhr.total * 100;
-        console.log( Math.round(percentComplete, 2) + '% downloaded' );
-      }
-    };
-
-    var onError = function ( xhr ) {
-    };
-
-
-    THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
-
-    var loader = new THREE.OBJMTLLoader();
-    loader.load( './assets/obj/female02/female02.obj', './assets/obj/female02/female02.mtl', function ( object ) {
-
-      object.position.y = 0;
-      scene.add( object );
-
-    }, onProgress, onError );
-
-    //
-
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    container.appendChild( renderer.domElement );
-
-    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-
-    //
-
-    window.addEventListener( 'resize', onWindowResize, false );
-
-  }
-*/
   function onWindowResize() {
 
     windowHalfX = window.innerWidth / 2;
@@ -261,7 +196,7 @@ $(document).ready(function() {
 
     console.log("rot y = "+camera.rotation.y);
 
-    if(camera.position.y<0) camera.position.y=0;
+    if(camera.rotation.y > 2*Math.PI || camera.rotation.y < -2*Math.PI) camera.rotation.y=0;
 
     //camera.lookAt( scene.position );
 

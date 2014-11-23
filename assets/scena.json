@@ -1,0 +1,50 @@
+{
+  "metadata": {
+    "version": 4.3,
+    "type": "Object",
+    "generator": "ObjectExporter"
+  },
+  "geometries": [
+    {
+      "uuid": "1A030F5A-C44D-4C97-8896-6342533FFDAC",
+      "type": "PlaneGeometry",
+      "width": 200,
+      "height": 200,
+      "widthSegments": 1,
+      "heightSegments": 1
+      }],
+      "materials": [
+        {
+          "uuid": "81243580-AC6F-48B0-8F9B-5F8C0C8AB797",
+          "type": "MeshPhongMaterial",
+          "color": 16777215,
+          "ambient": 16777215,
+          "emissive": 0,
+          "specular": 1118481,
+          "shininess": 30
+          }],
+          "object": {
+            "uuid": "A4B351A2-D6C9-498E-AA7E-75156CE92212",
+            "type": "Scene",
+            "name": "Scene",
+            "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+            "children": [
+              {
+                "uuid": "A3C044AE-EEED-4210-B84F-67B93E4968D3",
+                "type": "PointLight",
+                "name": "PointLight 1",
+                "color": 16777215,
+                "intensity": 1,
+                "distance": 0,
+                "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,216.12083435058594,126.37615203857422,0,1]
+              },
+              {
+                "uuid": "EAF612B8-0534-4807-A5F1-93FDC12BB7FC",
+                "type": "Mesh",
+                "name": "Plane 1",
+                "geometry": "1A030F5A-C44D-4C97-8896-6342533FFDAC",
+                "material": "81243580-AC6F-48B0-8F9B-5F8C0C8AB797",
+                "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,5.691590309143066,5.364528179168701,-35.24201202392578,1]
+                }]
+              }
+            }
