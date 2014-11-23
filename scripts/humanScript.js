@@ -244,6 +244,7 @@ $(document).ready(function() {
     var units = mapW;
     var UNITSIZE = 100;
     var WALLHEIGHT = UNITSIZE*2;
+    var WINDOWHEIGHT = 2*WALLHEIGHT/3;
 
     // Geometry: floor
     var floor = new THREE.Mesh(
@@ -253,23 +254,76 @@ $(document).ready(function() {
     scene.add(floor);
 
     // Geometry: walls
-    var cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT, UNITSIZE);
+    
     var materials = [
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/concrete_wall.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/red_wall_2.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/fri.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/vrata-nasproti.png')}),
+      new THREE.MeshBasicMaterial( { color: 0x181818, transparent: true, blending: THREE.AdditiveBlending } )
     ];
     for (var i = 0; i < mapW; i++) {
       for (var j = 0, m = map[i].length; j < m; j++) {
         console.log(map[i][j]);
         if (map[i][j]) {
-          var wall = new THREE.Mesh(cube, materials[map[i][j]-1]);
-          wall.position.x = (i - units/2) * UNITSIZE;
-          wall.position.y = WALLHEIGHT/2;
-          wall.position.z = (j - units/2) * UNITSIZE;
-          scene.add(wall);
+          if(map[i][j]==6) {
+            var geometry = new THREE.CylinderGeometry( UNITSIZE*2, UNITSIZE*2, WALLHEIGHT, 32 );
+            var mat = new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/red_wall_2.png')});
+            var cylinder = new THREE.Mesh( geometry, mat );
+            cylinder.position.x = (i - mapW/2) * UNITSIZE;
+            cylinder.position.y = WALLHEIGHT/2;
+            cylinder.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add(cylinder);
+          } else if(map[i][j] == 7) {
+            var cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT/3, UNITSIZE);
+            var wall = new THREE.Mesh(cube, materials[0]);
+            wall.position.x = (i - mapW/2) * UNITSIZE;
+            wall.position.y = WALLHEIGHT/6;
+            wall.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add(wall);
+
+            cube = new THREE.BoxGeometry(UNITSIZE, WINDOWHEIGHT, 10);
+            win = new THREE.Mesh(cube, materials[5]);
+            win.position.x = (i - mapW/2) * UNITSIZE;
+            win.position.y = WALLHEIGHT/6 + UNITSIZE;
+            win.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add(win);
+          } else if(map[i][j] == 5) {
+
+            cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT, 10);
+            win = new THREE.Mesh(cube, materials[5]);
+            win.position.x = (i - mapW/2) * UNITSIZE;
+            win.position.y = WALLHEIGHT/2;
+            win.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add(win);
+          }else if(map[i][j] == 8) {
+
+            cube = new THREE.BoxGeometry(10, WALLHEIGHT, UNITSIZE);
+            win = new THREE.Mesh(cube, materials[5]);
+            win.position.x = (i - mapW/2) * UNITSIZE;
+            win.position.y = WALLHEIGHT/2;
+            win.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add(win);
+          } else if(map[i][j]==9){
+
+            var geometry = new THREE.CylinderGeometry( UNITSIZE*2, UNITSIZE*2, WALLHEIGHT, 32 );
+            var mat = new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')});
+            var cylinder = new THREE.Mesh( geometry, mat );
+            cylinder.position.x = (i - mapW/2) * UNITSIZE;
+            cylinder.position.y = WALLHEIGHT/2;
+            cylinder.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add(cylinder);
+
+          
+          }else {
+            var cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT, UNITSIZE);
+            var wall = new THREE.Mesh(cube, materials[map[i][j]-1]);
+            wall.position.x = (i - mapW/2) * UNITSIZE;
+            wall.position.y = WALLHEIGHT/2;
+            wall.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add(wall);
+          }
         }
       }
     }
