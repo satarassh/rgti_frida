@@ -243,7 +243,7 @@ $(document).ready(function() {
   function setupScene() {
     var units = mapW;
     var UNITSIZE = 250;
-    var WALLHEIGHT = UNITSIZE / 3;
+    var WALLHEIGHT = UNITSIZE/3;
 
     // Geometry: floor
     var floor = new THREE.Mesh(
@@ -256,7 +256,8 @@ $(document).ready(function() {
     var cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT, UNITSIZE);
     var materials = [
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/concrete_wall.png')}),
-      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/red_wall.png')}),
+      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/red_wall_2.png')}),
+      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
     ];
     for (var i = 0; i < mapW; i++) {
       for (var j = 0, m = map[i].length; j < m; j++) {
