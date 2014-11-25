@@ -261,13 +261,15 @@ $(document).ready(function() {
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/fri.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/vrata-nasproti.png')}),
-      new THREE.MeshBasicMaterial( { color: 0x181818, transparent: true, blending: THREE.AdditiveBlending } )
+      new THREE.MeshBasicMaterial( { color: 0x181818, transparent: true, blending: THREE.AdditiveBlending }),
+      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/les.png')})
     ];
     for (var i = 0; i < mapW; i++) {
       for (var j = 0, m = map[i].length; j < m; j++) {
         console.log(map[i][j]);
         if (map[i][j]) {
           if(map[i][j]==6) {
+
             var geometry = new THREE.CylinderGeometry( UNITSIZE*2, UNITSIZE*2, WALLHEIGHT, 32 );
             var mat = new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/red_wall_2.png')});
             var cylinder = new THREE.Mesh( geometry, mat );
@@ -275,7 +277,9 @@ $(document).ready(function() {
             cylinder.position.y = WALLHEIGHT/2;
             cylinder.position.z = (j - mapH/2) * UNITSIZE;
             scene.add(cylinder);
+
           } else if(map[i][j] == 7) {
+
             var cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT/3, UNITSIZE);
             var wall = new THREE.Mesh(cube, materials[0]);
             wall.position.x = (i - mapW/2) * UNITSIZE;
@@ -289,6 +293,7 @@ $(document).ready(function() {
             win.position.y = WALLHEIGHT/6 + UNITSIZE;
             win.position.z = (j - mapH/2) * UNITSIZE;
             scene.add(win);
+
           } else if(map[i][j] == 5) {
 
             cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT, 10);
@@ -297,6 +302,7 @@ $(document).ready(function() {
             win.position.y = WALLHEIGHT/2;
             win.position.z = (j - mapH/2) * UNITSIZE;
             scene.add(win);
+
           }else if(map[i][j] == 8) {
 
             cube = new THREE.BoxGeometry(10, WALLHEIGHT, UNITSIZE);
@@ -305,6 +311,7 @@ $(document).ready(function() {
             win.position.y = WALLHEIGHT/2;
             win.position.z = (j - mapH/2) * UNITSIZE;
             scene.add(win);
+
           } else if(map[i][j]==9){
 
             var geometry = new THREE.CylinderGeometry( UNITSIZE*2, UNITSIZE*2, WALLHEIGHT, 32 );
@@ -315,14 +322,25 @@ $(document).ready(function() {
             cylinder.position.z = (j - mapH/2) * UNITSIZE;
             scene.add(cylinder);
 
-          
+          }else if(map[i][j]==10){
+
+            var klop = new THREE.BoxGeometry(UNITSIZE*3, WALLHEIGHT/4, UNITSIZE/2);
+            var mat = new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/les.png')});
+            var klopca = new THREE.Mesh( klop, mat );
+            klopca.position.x = (i - mapW/2) * UNITSIZE;
+            klopca.position.y = WALLHEIGHT/8;
+            klopca.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add(klopca);
+
           }else {
+
             var cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT, UNITSIZE);
             var wall = new THREE.Mesh(cube, materials[map[i][j]-1]);
             wall.position.x = (i - mapW/2) * UNITSIZE;
             wall.position.y = WALLHEIGHT/2;
             wall.position.z = (j - mapH/2) * UNITSIZE;
             scene.add(wall);
+
           }
         }
       }
