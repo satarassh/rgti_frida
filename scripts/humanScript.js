@@ -29,7 +29,7 @@ $(document).ready(function() {
         blendMesh.rotation.y = Math.PI / 180;
         startWalking();
       }
-      zmove = -5;
+      zmove = -15;
     }
 
     if(event.which == 65) {
@@ -38,7 +38,7 @@ $(document).ready(function() {
         blendMesh.rotation.y = Math.PI* 90 / 180;
         startWalking();
       }
-      xmove = -5;
+      xmove = -15;
     }
 
     if(event.which == 68) {
@@ -47,7 +47,7 @@ $(document).ready(function() {
         blendMesh.rotation.y = Math.PI* (-90) / 180;
         startWalking();
       }
-      xmove = 5;
+      xmove = 15;
     }
 
     if(event.which == 83) {
@@ -56,7 +56,7 @@ $(document).ready(function() {
         blendMesh.rotation.y = Math.PI;
         startWalking();
       }
-      zmove = 5;
+      zmove = 15;
     }
   });
 
@@ -160,9 +160,9 @@ $(document).ready(function() {
 
     blendMesh.stopAll();
 
-    blendMesh.play("idle", 0.25);
-    blendMesh.play("walk", 0.25);
-    blendMesh.play("run", 0.50);
+    blendMesh.play("idle", 0.00);
+    blendMesh.play("walk", 0.00);
+    blendMesh.play("run", 1.00);
 
     isFrameStepping = false;
 
@@ -253,6 +253,28 @@ $(document).ready(function() {
     );
     scene.add(floor);
 
+    var onProgress = function ( xhr ) {
+      if ( xhr.lengthComputable ) {
+        var percentComplete = xhr.loaded / xhr.total * 100;
+        console.log( Math.round(percentComplete, 2) + '% downloaded' );
+      }
+    };
+
+    var onError = function ( xhr ) {
+    };
+    function loadObject(obj,mtl,i,j){
+    var loader = new THREE.OBJMTLLoader();
+        loader.load( obj, mtl, function ( object ) {
+            object.position.x = (i - mapW/2) * UNITSIZE;
+            object.position.y = 5;
+            object.position.z = (j - mapH/2) * UNITSIZE;
+            object.rotation.y = degToRad(90);
+            object.scale.set(45,45,45);
+            scene.add( object );
+    }, onProgress, onError);
+    }
+
+
     // Geometry: walls
     
     var materials = [
@@ -260,7 +282,7 @@ $(document).ready(function() {
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/red_wall_2.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/fri.png')}),
-      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/vrata-nasproti.png')}),
+      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
       new THREE.MeshBasicMaterial( { color: 0x181818, transparent: true, blending: THREE.AdditiveBlending }),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/les.png')})
     ];
@@ -332,6 +354,8 @@ $(document).ready(function() {
             klopca.position.z = (j - mapH/2) * UNITSIZE;
             scene.add(klopca);
 
+          }else if(map[i][j]==11){
+            var stol = loadObject('./assets/Chair/Chair.obj', './assets/Chair/Chair.mtl', i, j);
           }else {
 
             var cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT, UNITSIZE);
