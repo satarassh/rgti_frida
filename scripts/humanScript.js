@@ -3,7 +3,7 @@ $(document).ready(function() {
 
   var container, stats;
 
-  var blendMesh, camera, scene, renderer, controls;
+  var blendMesh, camera, scene, renderer, controls, raycaster;
 
   var clock = new THREE.Clock();
   var gui = null;
@@ -12,51 +12,376 @@ $(document).ready(function() {
   var timeToStep = 0;
 
   var xmove = 0, ymove = 0, zmove = 0;
+  var camx = 0, camy = 0, camz = 0;
   var roty = 0;
   var isWalking = false;
 
   var mapW = map.length;
   var mapH = map[0].length
 
+  var camera_number = 1;
+  var camera_position = "north";
+  var person_position = "north";
+  var camoffsetZ = 350;
+  var camoffsetX = 0;
+
+  var aspect;
+  var radius;
+
+  var rotateAround = 0;
+
+  var mouse = {x: 0, y: 0};
+
+  var UNITSIZE = 100;
+
   function degToRad(degrees) {
     return degrees * Math.PI / 180;
   }
 
+  function cameraToDefault() {
+    camera_position = "north";
+    aspect = window.innerWidth / window.innerHeight;
+    radius = blendMesh.geometry.boundingSphere.radius;
+
+    camera = new THREE.PerspectiveCamera( 60, aspect, 1, 10000 );
+    camera.position.set( 0.0, radius, radius * 3.5 );
+    camera.position.x = blendMesh.position.x;
+    camera.position.y = blendMesh.position.y + 250;
+    camoffsetX = 0;
+    camoffsetZ = 350;
+
+    camera.rotation.x = degToRad(-20);
+    camera.rotation.y = degToRad(0);
+    camera.rotation.z = degToRad(0);
+  }
+
+  $("#Nbutton").click(function() {
+    camera_position = "north";
+    aspect = window.innerWidth / window.innerHeight;
+    radius = blendMesh.geometry.boundingSphere.radius;
+
+    camera = new THREE.PerspectiveCamera( 60, aspect, 1, 10000 );
+    camera.position.set( 0.0, radius, radius * 3.5 );
+    camera.position.x = blendMesh.position.x;
+    camera.position.y = blendMesh.position.y + 250;
+    camoffsetX = 0;
+    camoffsetZ = 350;
+
+    camera.rotation.x = degToRad(-20);
+    camera.rotation.y = degToRad(0);
+    camera.rotation.z = degToRad(0);
+  });
+
+  $("#Sbutton").click(function() {
+    camera_position = "south";
+    aspect = window.innerWidth / window.innerHeight;
+    radius = blendMesh.geometry.boundingSphere.radius;
+
+    camera = new THREE.PerspectiveCamera( 60, aspect, 1, 10000 );
+    camera.position.set( 0.0, radius, radius * 3.5 );
+    camera.position.x = blendMesh.position.x;
+    camera.position.y = blendMesh.position.y + 250;
+    camoffsetX = 0;
+    camoffsetZ = -350;
+
+    camera.rotation.x = degToRad(20);
+    camera.rotation.y = degToRad(180);
+    camera.rotation.z = degToRad(0);
+  });
+
+  $("#Wbutton").click(function() {
+    camera_position = "west";
+    aspect = window.innerWidth / window.innerHeight;
+    radius = blendMesh.geometry.boundingSphere.radius;
+
+    camera = new THREE.PerspectiveCamera( 60, aspect, 1, 10000 );
+    camera.position.set( 0.0, radius, radius * 3.5 );
+    camera.position.z = blendMesh.position.z;
+    camera.position.y = blendMesh.position.y + 220;
+    camoffsetX = 400;
+    camoffsetZ = 0;
+
+    camera.rotation.x = degToRad(0);
+    camera.rotation.y = degToRad(90);
+    camera.rotation.z = degToRad(0);
+  });
+
+  $("#Ebutton").click(function() {
+    camera_position = "east";
+    aspect = window.innerWidth / window.innerHeight;
+    radius = blendMesh.geometry.boundingSphere.radius;
+
+    camera = new THREE.PerspectiveCamera( 60, aspect, 1, 10000 );
+    camera.position.set( 0.0, radius, radius * 3.5 );
+    camera.position.z = blendMesh.position.x;
+    camera.position.y = blendMesh.position.y + 220;
+    camoffsetX = -400;
+    camoffsetZ = 0;
+
+    camera.rotation.x = degToRad(0);
+    camera.rotation.y = degToRad(-90);
+    camera.rotation.z = degToRad(0);
+  });
+
+  $("#switchToCamera1").click(function() {
+    camera_number = 1;
+
+    $("#camera1Controls").show();
+
+    cameraToDefault();
+  });
+
+  $("#switchToCamera2").click(function() {
+    camera_number = 2;
+
+    $("#camera1Controls").hide();
+
+    camera = new THREE.PerspectiveCamera( 60, aspect, 1, 10000 );
+    camera.position.set( 0.0, 1000, 0.0 );
+
+    controls = new THREE.OrbitControls( camera );
+    controls.target = new THREE.Vector3( 0, radius, 0 );
+    controls.update();
+  });
+
+  $("#switchToCameraBird").click(function() {
+    camera_number = 3;
+
+    $("#camera1Controls").hide();
+
+    aspect = window.innerWidth / window.innerHeight;
+    radius = blendMesh.geometry.boundingSphere.radius;
+
+    camera = new THREE.PerspectiveCamera( 60, aspect, 1, 10000 );
+    camera.position.set( 0.0, radius, radius * 3.5 );
+    camera.rotation.x = degToRad(-90);
+
+    camera.position.x = 0;
+    camera.position.y = 1000;
+    camera.position.z = 0;
+  });
+
+  $("#container").mousemove(function( event ) {
+    //$("#statusBar").text(camera.position.x+" "+camera.position.y+" : "+camera.rotation.x+" "+camera.rotation.y);
+    mouse.x = event.pageX;
+    mouse.y = event.pageY;
+  });
+
+  $("#switchGraphicsButton").click(function() {
+
+  });
+
   $("*").keydown(function(event) {
+    // gor
     if(event.which == 87) {
-      if(!isWalking) {
-        isWalking = true;
-        blendMesh.rotation.y = Math.PI / 180;
-        startWalking();
+      if(camera_number == 1) {
+        if(camera_position == "north") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = 0;
+            startWalking();
+          }
+          zmove = -15;
+          xmove = 0;
+          person_position = "north";
+        } else if(camera_position == "south") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI;
+            startWalking();
+          }
+          zmove = 15;
+          xmove = 0;
+          person_position = "south";
+        } else if(camera_position == "west") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI* 90 / 180;
+            startWalking();
+          }
+          xmove = -15;
+          zmove=0;
+          person_position = "west";
+        } else if(camera_position == "east") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI* (-90) / 180;
+            startWalking();
+          }
+          xmove = 15;
+          zmove=0;
+          person_position = "east";
+        }
+      } else if(camera_number == 2) {
+        camz = -15;
+      } else if(camera_number == 3) {
+        if(!isWalking) {
+          isWalking = true;
+          blendMesh.rotation.y = Math.PI / 180;
+          startWalking();
+        }
+        zmove = -15;
+        person_position = "north";
       }
-      zmove = -15;
     }
 
-    if(event.which == 65) {
-      if(!isWalking) {
-        isWalking = true;
-        blendMesh.rotation.y = Math.PI* 90 / 180;
-        startWalking();
-      }
-      xmove = -15;
-    }
-
-    if(event.which == 68) {
-      if(!isWalking) {
-        isWalking = true;
-        blendMesh.rotation.y = Math.PI* (-90) / 180;
-        startWalking();
-      }
-      xmove = 15;
-    }
-
+    // dol
     if(event.which == 83) {
-      if(!isWalking) {
-        isWalking = true;
-        blendMesh.rotation.y = Math.PI;
-        startWalking();
+      if(camera_number == 1) {
+        if(camera_position == "north") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI;
+            startWalking();
+          }
+          zmove = 15;
+          xmove = 0;
+          person_position = "north";
+        } else if(camera_position == "south") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = 0;
+            startWalking();
+          }
+          zmove = -15;
+          xmove = 0;
+          person_position = "south";
+        } else if(camera_position == "west") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI* (-90) / 180;
+            startWalking();
+          }
+          xmove = 15;
+          zmove=0;
+          person_position = "west";
+        } else if(camera_position == "east") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI* (90) / 180;
+            startWalking();
+          }
+          xmove = -15;
+          zmove=0;
+          person_position = "east";
+        }
+      } else if(camera_number == 2) {
+        camz = 15;
+      } else if(camera_number == 3) {
+        if(!isWalking) {
+          isWalking = true;
+          blendMesh.rotation.y = Math.PI;
+          startWalking();
+        }
+        zmove = 15;
+        person_position = "south";
       }
-      zmove = 15;
+    }
+
+    // levo
+    if(event.which == 65) {
+      if(camera_number == 1) {
+        if(camera_position == "north") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI* 90 / 180;
+            startWalking();
+          }
+          xmove = -15;
+          zmove=0;
+          person_position = "north";
+        } else if(camera_position == "south") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI* (-90) / 180;
+            startWalking();
+          }
+          xmove = 15;
+          zmove=0;
+          person_position = "south";
+        } else if(camera_position == "west") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI;
+            startWalking();
+          }
+          zmove = 15;
+          xmove = 0;
+          person_position = "west";
+        } else if(camera_position == "east") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = 0;
+            startWalking();
+          }
+          zmove = -15;
+          xmove = 0;
+          person_position = "east";
+        }
+      } if(camera_number == 2) {
+        camx = -15;
+      } else if(camera_number == 3) {
+        if(!isWalking) {
+          isWalking = true;
+          blendMesh.rotation.y = Math.PI* 90 / 180;
+          startWalking();
+        }
+        xmove = -15;
+        person_position = "west";
+      }
+    }
+
+    // desno
+    if(event.which == 68) {
+      if(camera_number == 1) {
+        if(camera_position == "north") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI* (-90) / 180;
+            startWalking();
+          }
+          xmove = 15;
+          zmove=0;
+          person_position = "north";
+        } else if(camera_position == "south") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI* 90 / 180;
+            startWalking();
+          }
+          xmove = -15;
+          zmove=0;
+          person_position = "south";
+        } else if(camera_position == "west") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = 0;
+            startWalking();
+          }
+          zmove = -15;
+          xmove = 0;
+          person_position = "west";
+        } else if(camera_position == "east") {
+          if(!isWalking) {
+            isWalking = true;
+            blendMesh.rotation.y = Math.PI;
+            startWalking();
+          }
+          zmove = 15;
+          xmove = 0;
+          person_position = "east";
+        }
+      } if(camera_number == 2) {
+        camx = 15;
+      } else if(camera_number == 3) {
+        if(!isWalking) {
+          isWalking = true;
+          blendMesh.rotation.y = Math.PI* (-90) / 180;
+          startWalking();
+        }
+        xmove = 15;
+        person_position = "east";
+      }
     }
   });
 
@@ -64,6 +389,8 @@ $(document).ready(function() {
     roty=0;
     zmove=0;
     xmove=0;
+    camx=0;
+    camz=0;
     isWalking = false;
     stopWalking();
   });
@@ -75,7 +402,7 @@ $(document).ready(function() {
     container = document.getElementById( 'container' );
 
     scene = new THREE.Scene();
-    scene.add ( new THREE.AmbientLight( 0x404040 ) );
+    scene.add ( new THREE.AmbientLight( 0x181818 ) );
 
     var light1 = new THREE.DirectionalLight( 0xffffff, 1.5 );
     light1.position.set( 0, 0, 100 );
@@ -85,59 +412,17 @@ $(document).ready(function() {
     light2.position.set( 50, 50, 50 );
     scene.add( light2 );
 
-    // ground
-    /*
-    var groundTexture = THREE.ImageUtils.loadTexture( "./assets/gray_floor.png" );
-    groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
-    groundTexture.repeat.set( 25, 25 );
-    groundTexture.anisotropy = 16;
-
-    var groundMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x111111, map: groundTexture } );
-
-    var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2000, 8000 ), groundMaterial );
-    mesh.position.y = -250;
-    mesh.rotation.x = - Math.PI / 2;
-    mesh.receiveShadow = true;
-    scene.add( mesh );
-*/
-
-    renderer = new THREE.WebGLRenderer( { antialias: true, alpha: false } );
+    renderer = new THREE.WebGLRenderer( { antialias: false, alpha: false } );
     renderer.setClearColor( '#7ec0ee', 1 );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.autoClear = true;
 
     container.appendChild( renderer.domElement );
 
-    /*
-    var onProgress = function ( xhr ) {
-      if ( xhr.lengthComputable ) {
-        var percentComplete = xhr.loaded / xhr.total * 100;
-        console.log( Math.round(percentComplete, 2) + '% downloaded' );
-      }
-    };
-
-    var onError = function ( xhr ) {
-    };
-
-    // load scene model
-    var sceneLoader = new THREE.AssimpJSONLoader();
-    sceneLoader.load( './assets/scena.json', function ( assimpjson ) {
-
-      assimpjson.scale.x = assimpjson.scale.y = assimpjson.scale.z = 1;
-      assimpjson.updateMatrix();
-
-      scene.add( assimpjson );
-
-    }, onProgress, onError );
-    */
-    //
-
     stats = new Stats();
     stats.domElement.style.position = 'absolute';
     stats.domElement.style.top = '0px';
     container.appendChild( stats.domElement );
-
-    //
 
     window.addEventListener( 'resize', onWindowResize, false );
 
@@ -147,84 +432,81 @@ $(document).ready(function() {
     setupScene();
   }
 
-  function onWindowResize() {
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
-
-  }
-
-  function startWalking() {
-
-    blendMesh.stopAll();
-
-    blendMesh.play("idle", 0.00);
-    blendMesh.play("walk", 0.00);
-    blendMesh.play("run", 1.00);
-
-    isFrameStepping = false;
-
-  }
-
-  function stopWalking() {
-
-    blendMesh.stopAll();
-
-    blendMesh.play("idle", 1.0);
-    blendMesh.play("walk", 0.0);
-    blendMesh.play("run", 0.0);
-
-    isFrameStepping = false;
-
-  }
-
   function start() {
-
-    blendMesh.rotation.y = Math.PI * -135 / 180;
+    blendMesh.rotation.y = Math.PI  / 180;
+    blendMesh.position.y = 10;
     scene.add( blendMesh );
 
-    var aspect = window.innerWidth / window.innerHeight;
-    var radius = blendMesh.geometry.boundingSphere.radius;
+    aspect = window.innerWidth / window.innerHeight;
+    radius = blendMesh.geometry.boundingSphere.radius;
 
-    camera = new THREE.PerspectiveCamera( 45, aspect, 1, 10000 );
+    camera = new THREE.PerspectiveCamera( 60, aspect, 1, 10000 );
     camera.position.set( 0.0, radius, radius * 3.5 );
     camera.rotation.x = degToRad(-20);
 
-    //controls = new THREE.OrbitControls( camera );
-    //controls.target = new THREE.Vector3( 0, radius, 0 );
-    //controls.update();
-
+    camera.position.y = blendMesh.position.y + 250;
+    camera.position.z = blendMesh.position.z + 350;
     // Set default weights
 
     blendMesh.animations[ 'idle' ].weight = 1 / 3;
     blendMesh.animations[ 'walk' ].weight = 1 / 3;
     blendMesh.animations[ 'run' ].weight = 1 / 3;
 
-    //gui = new BlendCharacterGui(blendMesh.animations);
-
     animate();
   }
 
+  function getMapSector(v) {
+    var x = Math.floor((v.x + UNITSIZE / 2) / UNITSIZE + mapW/2);
+    var z = Math.floor((v.z + UNITSIZE / 2) / UNITSIZE + mapH/2);
+    return {x: x, z: z};
+  }
+
+  function checkWallCollision(v) {
+    var c = getMapSector(v);
+    return map[c.x][c.z] > 0;
+  }
+
   function animate() {
-
-    requestAnimationFrame( animate, renderer.domElement );
-
-    // step forward in time based on whether we're stepping and scale
-
     var scale = 1;
     var delta = clock.getDelta();
     var stepSize = (!isFrameStepping) ? delta * scale: timeToStep;
 
-    blendMesh.position.x += xmove;
-    blendMesh.position.z += zmove;
+    // prej znotraj if stavka
+    var plusx = 0;
+    var plusz = 0;
 
-    camera.position.x = blendMesh.position.x;
-    camera.position.y = blendMesh.position.y + 250;
-    camera.position.z = blendMesh.position.z + 350;
+    if(person_position == "north") {
+      plusz = -40;
+    } else if(person_position == "south") {
+      plusz = 40;
+    } else if(person_position == "west") {
+      plusx = -40;
+    } else if(person_position == "east") {
+      plusx = 40;
+    }
 
-    // modify blend weights
+    var check = new THREE.Vector3( blendMesh.position.x+plusx, blendMesh.position.y, blendMesh.position.z+plusz );
+    check.x += xmove;
+    check.z += zmove;
+
+    if (!checkWallCollision(check)) {
+      blendMesh.position.x += xmove;
+      blendMesh.position.z += zmove;
+    }
+
+    if(camera_number == 1) {
+      camera.position.x = blendMesh.position.x+xmove+camoffsetX;
+      camera.position.z = blendMesh.position.z+zmove+camoffsetZ;
+      $("#statusBar").text("xmove="+xmove+" zmove="+zmove+" camoffsetX="+camoffsetX+" camoffsetZ="+camoffsetZ);
+    } else if(camera_number == 2) {
+      // do something
+      camera.position.x += camx;
+      camera.position.z += camz;
+      controls.update();
+    } else if(camera_number == 3) {
+      camera.position.x = blendMesh.position.x;
+      camera.position.z = blendMesh.position.z;
+    }
 
     blendMesh.update( stepSize );
 
@@ -233,11 +515,10 @@ $(document).ready(function() {
     renderer.render( scene, camera );
     stats.update();
 
-    // if we are stepping, consume time
-    // ( will equal step size next time a single step is desired )
-
     timeToStep = 0;
+    //$("#statusBar").text(camera.position.x+" "+camera.position.y+" "+camera.position.z+" : "+camera.rotation.x+" "+camera.rotation.y+" "+camera.rotation.z);
 
+    requestAnimationFrame( animate, renderer.domElement );
   }
 
   function setupScene() {
@@ -263,28 +544,28 @@ $(document).ready(function() {
     var onError = function ( xhr ) {
     };
     function loadObject(obj,mtl,i,j){
-    var loader = new THREE.OBJMTLLoader();
-        loader.load( obj, mtl, function ( object ) {
-            object.position.x = (i - mapW/2) * UNITSIZE;
-            object.position.y = 5;
-            object.position.z = (j - mapH/2) * UNITSIZE;
-            object.rotation.y = degToRad(90);
-            object.scale.set(45,45,45);
-            scene.add( object );
-    }, onProgress, onError);
+      var loader = new THREE.OBJMTLLoader();
+      loader.load( obj, mtl, function ( object ) {
+        object.position.x = (i - mapW/2) * UNITSIZE;
+        object.position.y = 5;
+        object.position.z = (j - mapH/2) * UNITSIZE;
+        object.rotation.y = degToRad(90);
+        object.scale.set(45,45,45);
+        scene.add( object );
+      }, onProgress, onError);
     }
 
 
     // Geometry: walls
-    
+
     var materials = [
-      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/concrete_wall.png')}),
-      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/red_wall_2.png')}),
-      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
-      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/fri.png')}),
-      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
-      new THREE.MeshBasicMaterial( { color: 0x181818, transparent: true, blending: THREE.AdditiveBlending }),
-      new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/les.png')})
+    new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/concrete_wall.png')}),
+    new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/red_wall_2.png')}),
+    new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
+    new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/fri.png')}),
+    new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/yellow_wall.png')}),
+    new THREE.MeshBasicMaterial( { color: 0x181818, transparent: true, blending: THREE.AdditiveBlending }),
+    new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/les.png')})
     ];
     for (var i = 0; i < mapW; i++) {
       for (var j = 0, m = map[i].length; j < m; j++) {
@@ -377,5 +658,39 @@ $(document).ready(function() {
     var directionalLight2 = new THREE.DirectionalLight( 0xF7EFBE, 0.5 );
     directionalLight2.position.set( -0.5, -1, -0.5 );
     scene.add( directionalLight2 );
+  }
+
+  function onWindowResize() {
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
+
+    //controls.handleResize();
+  }
+
+  function startWalking() {
+
+    blendMesh.stopAll();
+
+    blendMesh.play("idle", 0);
+    blendMesh.play("walk", 0);
+    blendMesh.play("run", 1.0);
+
+    isFrameStepping = false;
+
+  }
+
+  function stopWalking() {
+
+    blendMesh.stopAll();
+
+    blendMesh.play("idle", 1.0);
+    blendMesh.play("walk", 0.0);
+    blendMesh.play("run", 0.0);
+
+    isFrameStepping = false;
+
   }
 });

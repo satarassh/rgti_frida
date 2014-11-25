@@ -7,6 +7,9 @@
     <link rel="icon" type="image/jpg" href="./assets/fri.ico">
 
     <link rel="stylesheet" href="./style/userStyle.css" type="text/css">
+    <link rel="stylesheet" href="./style/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="./style/bootstrap-theme.min.css" type="text/css">
+
     <script type="text/javascript" src="./scripts/glMatrix-0.9.5.min.js"></script>
     <script src="./scripts/jquery-2.1.1.js"></script>
     <script src="./scripts/three.min.js"></script>
@@ -20,9 +23,13 @@
     <script src="./scripts/stats.min.js"></script>
 
     <script src="./scripts/OrbitControls.js"></script>
+    <script src="./scripts/FirstPersonControls.js"></script>
+    <script src="./scripts/PointerLockControls.js"></script>
     <script src="./scripts/BlendCharacter.js"></script>
     <script src="./scripts/BlendCharacterGui.js"></script>
     <script src="./scripts/dat.gui.min.js"></script>
+
+    <script src="./scripts/bootstrap.min.js"></script>
 
     <script type="text/javascript" src="./scripts/world_map.js"></script>
     <script type="text/javascript" src="./scripts/humanScript.js"></script>
@@ -30,6 +37,27 @@
   </head>
   <body>
     <div id="container"></div>
-    <!--<iframe id="ytvideo" src="//www.youtube.com/embed/QkQn_Y1tsFo?autoplay=1&modestbranding=1&loop=1" frameborder="0" allowfullscreen></iframe>-->
+    <div id="switchCameraDropdown" class="btn-group">
+      <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+        Switch camera <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" role="menu">
+        <li><a id="switchToCamera1" href="javascript:void(0)">Camera 1</a></li>
+        <li><a id="switchToCamera2" href="javascript:void(0)">Overview</a></li>
+        <li><a id="switchToCameraBird" href="javascript:void(0)">Bird perspective</a></li>
+      </ul>
+    </div>
+
+    <div id="camera1Controls">
+      <button id="Nbutton" type="button" class="btn btn-default">N</button>
+      <button id="Sbutton" type="button" class="btn btn-default">S</button>
+      <button id="Wbutton" type="button" class="btn btn-default">W</button>
+      <button id="Ebutton" type="button" class="btn btn-default">E</button>
+      <img id="compassImg" src="./assets/compass.png" width="35" height="35">
+    </div>
+
+    <h4><span id="statusBar" class="label label-default">Status bar</span></h4>
+    <!--<button id="switchGraphicsButton" type="button" class="btn btn-primary">High graphics</button>
+    <iframe id="ytvideo" src="//www.youtube.com/embed/QkQn_Y1tsFo?autoplay=1&modestbranding=1&loop=1" frameborder="0" allowfullscreen></iframe>-->
   </body>
 </html>
