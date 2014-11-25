@@ -402,20 +402,25 @@ $(document).ready(function() {
     container = document.getElementById( 'container' );
 
     scene = new THREE.Scene();
-    scene.add ( new THREE.AmbientLight( 0x181818 ) );
+    scene.fog = new THREE.Fog( 0xcce0ff, 500, 20000 );
+    scene.add ( new THREE.AmbientLight( 0x444444 ) );
 
-    var light1 = new THREE.DirectionalLight( 0xffffff, 1.5 );
+    var sun = new THREE.PointLight( 0xFFFF7F, 5, 10000 ); sun.position.set( -3000, 2000, 8000 ); scene.add( sun );
+
+    var light1 = new THREE.DirectionalLight( 0x666666, 1.5 );
     light1.position.set( 0, 0, 100 );
     scene.add( light1 );
 
-    var light2 = new THREE.PointLight( 0xff0000, 1, 0 ); // Affects objects using MeshLambertMaterial or MeshPhongMaterial
+
+    var light2 = new THREE.PointLight( 0x220000, 1, 0 ); // Affects objects using MeshLambertMaterial or MeshPhongMaterial
     light2.position.set( 50, 50, 50 );
     scene.add( light2 );
 
+
     renderer = new THREE.WebGLRenderer( { antialias: false, alpha: false } );
-    renderer.setClearColor( '#7ec0ee', 1 );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.autoClear = true;
+    renderer.setClearColor( scene.fog.color );
 
     container.appendChild( renderer.domElement );
 
@@ -522,17 +527,30 @@ $(document).ready(function() {
   }
 
   function setupScene() {
-    var units = mapW;
     var UNITSIZE = 100;
     var WALLHEIGHT = UNITSIZE*2;
     var WINDOWHEIGHT = 2*WALLHEIGHT/3;
 
     // Geometry: floor
     var floor = new THREE.Mesh(
-      new THREE.BoxGeometry(units * UNITSIZE, 10, units * UNITSIZE),
+      new THREE.BoxGeometry(mapW * UNITSIZE, 10, mapH * UNITSIZE),
       new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture('./assets/gray_floor.png')})
     );
     scene.add(floor);
+
+    // ground
+
+    var groundTexture = THREE.ImageUtils.loadTexture( "./assets/textures/terrain/grasslight-big.jpg" );
+    groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+    groundTexture.repeat.set( 25, 25 );
+    groundTexture.anisotropy = 16;
+
+    var groundMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x111111, map: groundTexture } );
+
+    var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 100000, 100000 ), groundMaterial );
+    mesh.rotation.x = - Math.PI / 2;
+    mesh.receiveShadow = true;
+    scene.add( mesh );
 
     var onProgress = function ( xhr ) {
       if ( xhr.lengthComputable ) {
