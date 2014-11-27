@@ -1,9 +1,15 @@
 $(document).ready(function() {
   if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+  var currentLevel = 1;
+
+  setTimeout(function() {
+    $('#bigObjective').fadeOut('slow');
+    $('#objectivesBar').text(objectives[currentLevel-1]);
+  }, 3000);
 
   var container, stats;
 
-  var blendMesh, camera, scene, renderer, controls, raycaster;
+  var blendMesh, camera, scene, renderer, controls, raycaster, prof;
 
   var clock = new THREE.Clock();
   var gui = null;
@@ -15,6 +21,7 @@ $(document).ready(function() {
   var camx = 0, camy = 0, camz = 0;
   var roty = 0;
   var isWalking = false;
+  var currentNumStanding = 0;
 
   var mapW = map.length;
   var mapH = map[0].length
@@ -33,6 +40,9 @@ $(document).ready(function() {
   var mouse = {x: 0, y: 0};
 
   var UNITSIZE = 100;
+
+  /* Temporary object in scene */
+  var cylinderLevel1, lightLevel1;
 
   function degToRad(degrees) {
     return degrees * Math.PI / 180;
@@ -141,6 +151,7 @@ $(document).ready(function() {
 
     controls = new THREE.OrbitControls( camera );
     controls.target = new THREE.Vector3( 0, radius, 0 );
+    //controls.maxPolarAngle = Math.PI/2;
     controls.update();
   });
 
@@ -157,7 +168,7 @@ $(document).ready(function() {
     camera.rotation.x = degToRad(-90);
 
     camera.position.x = 0;
-    camera.position.y = 1000;
+    camera.position.y = 2000;
     camera.position.z = 0;
   });
 
@@ -406,6 +417,12 @@ $(document).ready(function() {
     scene.add ( new THREE.AmbientLight( 0x444444 ) );
 
     var sun = new THREE.PointLight( 0xFFFF7F, 5, 10000 ); sun.position.set( -3000, 2000, 8000 ); scene.add( sun );
+    // Add Sun Helper
+    //sunSphere = new THREE.Mesh( new THREE.SphereGeometry( 20000, 30, 30 ),
+    //new THREE.MeshBasicMaterial({color: 0xffffff, wireframe: false }));
+    //sunSphere.position.y = -700000;
+    //sunSphere.visible = true;
+    //scene.add( sunSphere );
 
     var light1 = new THREE.DirectionalLight( 0x666666, 1.5 );
     light1.position.set( 0, 0, 100 );
@@ -451,8 +468,8 @@ $(document).ready(function() {
 
     camera.position.y = blendMesh.position.y + 250;
     camera.position.z = blendMesh.position.z + 350;
-    // Set default weights
 
+    // Set default weights
     blendMesh.animations[ 'idle' ].weight = 1 / 3;
     blendMesh.animations[ 'walk' ].weight = 1 / 3;
     blendMesh.animations[ 'run' ].weight = 1 / 3;
@@ -468,7 +485,8 @@ $(document).ready(function() {
 
   function checkWallCollision(v) {
     var c = getMapSector(v);
-    return map[c.x][c.z] > 0;
+    currentNumStanding = map[c.x][c.z];
+    return map[c.x][c.z] > 0 && map[c.x][c.z] <= 100;
   }
 
   function animate() {
@@ -494,15 +512,35 @@ $(document).ready(function() {
     check.x += xmove;
     check.z += zmove;
 
-    if (!checkWallCollision(check)) {
+    var posnum = checkWallCollision(check);
+
+    $("#statusBar").text("posnum="+posnum+" currNumStanding="+currentNumStanding+" currentLevel"+currentLevel);
+
+    if (!posnum) {
       blendMesh.position.x += xmove;
       blendMesh.position.z += zmove;
+
+      if(currentNumStanding == 131 && currentLevel == 1) {
+        $('#bigObjective').show();
+
+        currentLevel=2;
+
+        $('#bigObjectiveHeader').text("New objective");
+        $('#bigObjectiveText').text(objectives[currentLevel-1]);
+        setTimeout(function() {
+          $('#bigObjective').fadeOut('slow');
+        }, 3000);
+
+        $('#objectivesBar').text(objectives[currentLevel-1]);
+        scene.remove(cylinderLevel1);
+        scene.remove(lightLevel1);
+      }
     }
 
     if(camera_number == 1) {
       camera.position.x = blendMesh.position.x+xmove+camoffsetX;
       camera.position.z = blendMesh.position.z+zmove+camoffsetZ;
-      $("#statusBar").text("xmove="+xmove+" zmove="+zmove+" camoffsetX="+camoffsetX+" camoffsetZ="+camoffsetZ);
+      //$("#statusBar").text("xmove="+xmove+" zmove="+zmove+" camoffsetX="+camoffsetX+" camoffsetZ="+camoffsetZ);
     } else if(camera_number == 2) {
       // do something
       camera.position.x += camx;
@@ -539,7 +577,6 @@ $(document).ready(function() {
     scene.add(floor);
 
     // ground
-
     var groundTexture = THREE.ImageUtils.loadTexture( "./assets/textures/terrain/grasslight-big.jpg" );
     groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
     groundTexture.repeat.set( 25, 25 );
@@ -587,7 +624,7 @@ $(document).ready(function() {
     ];
     for (var i = 0; i < mapW; i++) {
       for (var j = 0, m = map[i].length; j < m; j++) {
-        console.log(map[i][j]);
+        //console.log(map[i][j]);
         if (map[i][j]) {
           if(map[i][j]==6) {
 
@@ -654,8 +691,70 @@ $(document).ready(function() {
             scene.add(klopca);
 
           }else if(map[i][j]==11){
-            var stol = loadObject('./assets/Chair/Chair.obj', './assets/Chair/Chair.mtl', i, j);
-          }else {
+            //var stol = loadObject('./assets/Chair/Chair.obj', './assets/Chair/Chair.mtl', i, j);
+          }else if(map[i][j]==30){
+            var coladaProfessor = new THREE.ColladaLoader();
+            var ic = i, jc = j;
+            coladaProfessor.load( "./assets/models/collada/avatar.dae", function ( collada ) {
+
+              prof = collada.scene;
+              prof.traverse( function ( child ) {
+
+                if ( child instanceof THREE.SkinnedMesh ) {
+
+                  var animation = new THREE.Animation( child, child.geometry.animation );
+                  animation.play();
+
+                }
+
+              } );
+              prof.rotation.x = degToRad(-90);
+              prof.rotation.z = degToRad(90);
+
+              prof.position.x = (ic - mapW/2) * UNITSIZE;
+              prof.position.y = 10;
+              prof.position.z = (jc - mapH/2) * UNITSIZE;
+
+              //alert(prof.position.x+" "+prof.position.y+" "+prof.position.z+" ");
+
+              prof.scale.x = prof.scale.y = prof.scale.z = 120.0;
+              prof.updateMatrix();
+
+              scene.add( collada.scene );
+              animate();
+            } );
+
+            var message = makeTextSprite( " Prof. Bohak ",
+            { fontsize: 32, fontface: "Arial", borderColor: {r:0, g:0, b:255, a:1.0} } );
+            message.position.x = (ic - mapW/2) * UNITSIZE;
+            message.position.y = 230;
+            message.position.z = (jc - mapH/2) * UNITSIZE-20;
+            scene.add( message );
+          } else if(map[i][j]==131) {
+            var geometry = new THREE.CylinderGeometry( UNITSIZE, UNITSIZE, WALLHEIGHT, 32 );
+            var mat = new THREE.MeshBasicMaterial( { color: 0xCD00CD, transparent: true, blending: THREE.AdditiveBlending });
+            cylinderLevel1 = new THREE.Mesh( geometry, mat );
+            cylinderLevel1.position.x = (i - mapW/2) * UNITSIZE;
+            cylinderLevel1.position.y = WALLHEIGHT/2;
+            cylinderLevel1.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add(cylinderLevel1);
+            lightLevel1 = new THREE.PointLight( 0xD15FEE, 1, 1000 );
+            lightLevel1.position.x = (i - mapW/2) * UNITSIZE;
+            lightLevel1.position.y = 50;
+            lightLevel1.position.z = (j - mapH/2) * UNITSIZE;
+
+            scene.add(lightLevel1);
+
+          }else if(map[i][j]>100) {
+
+            $("#statusBar").text(map[i][j]);
+            var message = makeTextSprite( " R 1."+(map[i][j]-100)+" ",
+            { fontsize: 32, fontface: "Arial", borderColor: {r:0, g:0, b:255, a:1.0} } );
+            message.position.x = (i - mapW/2) * UNITSIZE;
+            message.position.y = 230;
+            message.position.z = (j - mapH/2) * UNITSIZE;
+            scene.add( message );
+          } else {
 
             var cube = new THREE.BoxGeometry(UNITSIZE, WALLHEIGHT, UNITSIZE);
             var wall = new THREE.Mesh(cube, materials[map[i][j]-1]);

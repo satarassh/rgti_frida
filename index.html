@@ -12,12 +12,13 @@
 
     <script type="text/javascript" src="./scripts/glMatrix-0.9.5.min.js"></script>
     <script src="./scripts/jquery-2.1.1.js"></script>
-    <script src="./scripts/three.min.js"></script>
+    <script src="./scripts/three.js"></script>
 
     <script src="./scripts/DDSLoader.js"></script>
     <script src="./scripts/MTLLoader.js"></script>
     <script src="./scripts/OBJMTLLoader.js"></script>
     <script src="./scripts/AssimpJSONLoader.js"></script>
+    <script src="./scripts/ColladaLoader.js"></script>
 
     <script src="./scripts/Detector.js"></script>
     <script src="./scripts/stats.min.js"></script>
@@ -32,6 +33,8 @@
     <script src="./scripts/bootstrap.min.js"></script>
 
     <script type="text/javascript" src="./scripts/world_map.js"></script>
+    <script type="text/javascript" src="./scripts/objectives.js"></script>
+    <script type="text/javascript" src="./scripts/aux_script.js"></script>
     <script type="text/javascript" src="./scripts/humanScript.js"></script>
     <!--<script type="text/javascript" src="./scripts/indexScript.js"></script>-->
   </head>
@@ -56,7 +59,15 @@
       <img id="compassImg" src="./assets/compass.png" width="35" height="35">
     </div>
 
+    <h4><span id="objectivesBar" class="label label-danger">Objective bar</span></h4>
     <h4><span id="statusBar" class="label label-default">Status bar</span></h4>
+
+    <div id="bigObjective" class="panel panel-default toCenter">
+      <div class="panel-body">
+        <span id="bigObjectiveHeader">New objective</span>
+      </div>
+      <div class="panel-footer panFoot" id="bigObjectiveText"><span id="bigObjectiveText">Predavanja se v kratkem pričnejo Fric pa ima, kot je za bruca razumljivo, začetne težave z orientacijo na fakulteti. Pomagaj mu poiskati predavalnico R1.13.</span></div>
+    </div>
 
     <!--
 
